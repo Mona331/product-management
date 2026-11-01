@@ -24,14 +24,14 @@ class ProductController extends Controller
     // حفظ المنتج
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock_quantity' => 'required|integer|min:0',
         ]);
 
-        Product::create($request->all());
+        Product::create($data);
 
         return redirect()->route('products.index')
             ->with('success', 'Product added successfully!');
@@ -46,14 +46,14 @@ class ProductController extends Controller
     // تحديث بيانات المنتج
     public function update(Request $request, Product $product)
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock_quantity' => 'required|integer|min:0',
         ]);
 
-        $product->update($request->all());
+        $product->update($data);
 
         return redirect()->route('products.index')
             ->with('success', 'Product updated successfully!');
