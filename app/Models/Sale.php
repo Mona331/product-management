@@ -10,7 +10,7 @@ class Sale extends Model
         'customer_id',
         'employee_id',
         'total_amount',
-        'sale_date',
+        'sales_time',
     ];
 
     public function customer()
