@@ -22,7 +22,11 @@
     {{ session('success') }}
 </div>
 @endif
-
+@if(session('error'))
+<div class="alert alert-danger">
+    {{ session('error') }}
+</div>
+@endif
 <div class="card shadow-sm border-0">
 
     <div class="card-body">

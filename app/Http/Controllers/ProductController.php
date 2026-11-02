@@ -62,6 +62,11 @@ class ProductController extends Controller
     // حذف المنتج
     public function destroy(Product $product)
     {
+        if ($product->saleItems()->exists()) {
+            return redirect()->route('products.index')
+                ->with('error', 'Cannot delete this product because it is linked to sales.');
+        }
+
         $product->delete();
 
         return redirect()->route('products.index')
