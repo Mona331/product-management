@@ -186,7 +186,9 @@ class ReportController extends Controller
 
     public function employees(Request $request)
     {
-        $query = Employee::query()->latest();
+        $query = Employee::withCount('sales')
+            ->withSum('sales', 'total_amount')
+            ->latest();
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
@@ -329,5 +331,23 @@ class ReportController extends Controller
 
             fclose($file);
         }, 200, $headers);
+    }
+
+    public function employeeSales(Employee $employee)
+    {
+        $sales = Sale::with(['customer', 'saleItems.product'])
+            ->where('employee_id', $employee->id)
+            ->latest('sales_time')
+            ->get();
+
+        $totalSales = $sales->sum('total_amount');
+        $salesCount = $sales->count();
+
+        return view('reports.employee-sales', compact(
+            'employee',
+            'sales',
+            'totalSales',
+            'salesCount'
+        ));
     }
 }

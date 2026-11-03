@@ -61,6 +61,7 @@
 
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
+
                 <thead class="table-dark">
                     <tr>
                         <th>ID</th>
@@ -68,6 +69,9 @@
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Position</th>
+                        <th>Number of Sales</th>
+                        <th>Total Sales Amount</th>
+                        <th>Sales Details</th>
                     </tr>
                 </thead>
 
@@ -79,21 +83,37 @@
                         <td>{{ $employee->email ?? 'N/A' }}</td>
                         <td>{{ $employee->phone ?? 'N/A' }}</td>
                         <td>{{ $employee->position }}</td>
+
+                        <td>{{ $employee->sales_count }}</td>
+
+                        <td>
+                            {{ number_format($employee->sales_sum_total_amount ?? 0, 2) }}
+                        </td>
+
+                        <td>
+                            <a href="{{ route('reports.employees.sales', $employee->id) }}"
+                                class="btn btn-sm btn-primary">
+                                View Sales
+                            </a>
+                        </td>
                     </tr>
+
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center">
+                        <td colspan="8" class="text-center">
                             No employees found.
                         </td>
                     </tr>
                     @endforelse
                 </tbody>
+
             </table>
         </div>
 
         <button onclick="window.print()" class="btn btn-dark">
             Print Report
         </button>
+
         <a href="{{ route('reports.employees.exportExcel', request()->query()) }}"
             class="btn btn-success">
             Export Excel
