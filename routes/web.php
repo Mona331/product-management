@@ -7,13 +7,34 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 Route::middleware('auth')->group(function () {
-
+    // Reports: Admin only
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/reports/sales/export', [ReportController::class, 'exportSales'])
+            ->name('reports.sales.export');
+        Route::get('/reports/sales/export-excel', [ReportController::class, 'exportSalesExcel'])
+            ->name('reports.sales.exportExcel');
+        Route::get('/reports/sales', [ReportController::class, 'sales'])
+            ->name('reports.sales');
+        Route::get('/reports/products', [ReportController::class, 'products'])
+            ->name('reports.products');
+        Route::get('/reports/products/export-excel', [ReportController::class, 'exportProductsExcel'])
+            ->name('reports.products.exportExcel');
+        Route::get('/reports/employees', [ReportController::class, 'employees'])
+            ->name('reports.employees');
+        Route::get('/reports/employees/export-excel', [ReportController::class, 'exportEmployeesExcel'])
+            ->name('reports.employees.exportExcel');
+        Route::get('/reports/customers', [ReportController::class, 'customers'])
+            ->name('reports.customers');
+        Route::get('/reports/customers/export-excel', [ReportController::class, 'exportCustomersExcel'])
+            ->name('reports.customers.exportExcel');
+    });
     // Dashboard: all authenticated users
     Route::get('/dashboard', function () {
         return view('dashboard');

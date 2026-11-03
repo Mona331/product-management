@@ -70,6 +70,39 @@
                         <a class="nav-link" href="{{ route('users.index') }}">User Management</a>
                     </li>
                     @endif
+                    {{-- Reports: Admin only --}}
+                    @if(auth()->user()->role === 'admin')
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button"
+                            data-bs-toggle="dropdown">
+                            Reports
+                        </a>
+
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('reports.sales') }}">
+                                    Sales Report
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('reports.products') }}">
+                                    Products Report
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('reports.employees') }}">
+                                    Employees Report
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('reports.customers') }}">
+                                    Customers Report
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    @endif
 
 
                 </ul>
