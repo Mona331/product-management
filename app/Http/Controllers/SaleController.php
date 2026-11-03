@@ -105,4 +105,46 @@ class SaleController extends Controller
         return redirect()->route('sales.index')
             ->with('error', 'Sales records cannot be deleted.');
     }
+
+    public function exportExcel(Sale $sale)
+    {
+        $sale->load(['customer', 'employee', 'saleItems.product']);
+
+        $fileName = 'sale_' . $sale->id . '.csv';
+
+        return response()->streamDownload(function () use ($sale) {
+
+            $file = fopen('php://output', 'w');
+
+            // UTF-8 support for Arabic
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($file, ['Sale ID', $sale->id]);
+            fputcsv($file, ['Customer', $sale->customer->name ?? 'N/A']);
+            fputcsv($file, ['Employee', $sale->employee->name ?? 'Not assigned']);
+            fputcsv($file, ['Sale Time', $sale->sales_time]);
+            fputcsv($file, []);
+
+            fputcsv($file, [
+                'Product',
+                'Quantity',
+                'Unit Price',
+                'Subtotal'
+            ]);
+
+            foreach ($sale->saleItems as $item) {
+                fputcsv($file, [
+                    $item->product->name ?? 'N/A',
+                    $item->quantity,
+                    $item->unit_price,
+                    $item->quantity * $item->unit_price
+                ]);
+            }
+
+            fputcsv($file, []);
+            fputcsv($file, ['Total Amount', $sale->total_amount]);
+
+            fclose($file);
+        }, $fileName);
+    }
 }

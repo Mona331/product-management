@@ -10,6 +10,44 @@
     <h5>Employee: {{ $employee->name }}</h5>
     <p class="text-muted">Position: {{ $employee->position }}</p>
 </div>
+{{-- Date Filter --}}
+<form method="GET"
+    action="{{ route('reports.employees.sales', $employee->id) }}"
+    class="card card-body mb-4">
+
+    <h5 class="mb-3">Filter Sales by Date</h5>
+
+    <div class="row align-items-end">
+
+        <div class="col-md-4">
+            <label class="form-label">Start Date</label>
+            <input type="date"
+                name="start_date"
+                class="form-control"
+                value="{{ request('start_date') }}">
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">End Date</label>
+            <input type="date"
+                name="end_date"
+                class="form-control"
+                value="{{ request('end_date') }}">
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary">
+                Filter
+            </button>
+
+            <a href="{{ route('reports.employees.sales', $employee->id) }}"
+                class="btn btn-secondary">
+                Reset
+            </a>
+        </div>
+
+    </div>
+</form>
 
 {{-- Summary --}}
 <div class="row mb-4">
@@ -86,12 +124,46 @@
 
             </table>
         </div>
+        <h4 class="mt-5 mb-3">Products Sold by Employee</h4>
 
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Product</th>
+                        <th>Total Quantity Sold</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($productsSold as $item)
+                    <tr>
+                        <td>{{ $item->product->name ?? 'N/A' }}</td>
+                        <td>{{ $item->total_quantity }}</td>
+                        <td>{{ number_format($item->total_amount, 2) }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            No products sold.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
         <a href="{{ route('reports.employees') }}"
             class="btn btn-secondary">
             Back to Employees Report
         </a>
-
+        <a href="{{ route('reports.employees.sales.exportExcel', array_merge(
+    ['employee' => $employee->id],
+    request()->only(['start_date', 'end_date'])
+)) }}"
+            class="btn btn-success">
+            Export Excel
+        </a>
         <button onclick="window.print()" class="btn btn-dark">
             Print Report
         </button>

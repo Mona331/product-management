@@ -10,9 +10,16 @@
         <p class="text-muted">Sale #{{ $sale->id }}</p>
     </div>
 
-    <a href="{{ route('sales.index') }}" class="btn btn-secondary">
-        Back to Sales
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('sales.exportExcel', $sale->id) }}"
+            class="btn btn-success">
+            Export Excel
+        </a>
+
+        <a href="{{ route('sales.index') }}" class="btn btn-secondary">
+            Back to Sales
+        </a>
+    </div>
 </div>
 
 <div class="card shadow-sm border-0 mb-4">

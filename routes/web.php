@@ -36,6 +36,11 @@ Route::middleware('auth')->group(function () {
             ->name('reports.customers.exportExcel');
         Route::get('/reports/employees/{employee}/sales', [ReportController::class, 'employeeSales'])
             ->name('reports.employees.sales');
+        Route::get('/reports/employees/{employee}/sales/export-excel', [ReportController::class, 'exportEmployeeSalesExcel'])
+            ->name('reports.employees.sales.exportExcel');
+
+        Route::get('/sales/{sale}/export-excel', [SaleController::class, 'exportExcel'])
+            ->name('sales.exportExcel');
     });
     // Dashboard: all authenticated users
     Route::get('/dashboard', function () {

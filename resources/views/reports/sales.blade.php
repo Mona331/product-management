@@ -60,6 +60,26 @@
     </div>
 </div>
 
+{{-- Top Selling Products Today --}}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+
+        <h5 class="fw-bold mb-3">
+            Top Selling Products Today
+        </h5>
+
+        @if($topProductsToday->isNotEmpty())
+        <div style="height: 300px;">
+            <canvas id="topProductsChart"></canvas>
+        </div>
+        @else
+        <p class="text-muted text-center py-4">
+            No products sold today.
+        </p>
+        @endif
+
+    </div>
+</div>
 {{-- Summary Cards --}}
 <div class="row mb-4">
 
@@ -103,6 +123,7 @@
                         <th>Employee</th>
                         <th>Date</th>
                         <th>Total Amount</th>
+                        <th>Details</th>
                     </tr>
                 </thead>
 
@@ -125,6 +146,12 @@
 
                         <td class="fw-bold">
                             {{ number_format($sale->total_amount, 2) }}
+                        </td>
+                        <td>
+                            <a href="{{ route('sales.show', $sale->id) }}"
+                                class="btn btn-sm btn-primary">
+                                Details
+                            </a>
                         </td>
                     </tr>
                     @empty
@@ -153,5 +180,43 @@
 
     </div>
 </div>
+@if($topProductsToday->isNotEmpty())
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<script>
+    const productLabels = @json($topProductsToday -> pluck('product.name'));
+
+    const productQuantities = @json($topProductsToday -> pluck('total_quantity'));
+
+    new Chart(document.getElementById('topProductsChart'), {
+        type: 'bar',
+        data: {
+            labels: productLabels,
+            datasets: [{
+                label: 'Quantity Sold',
+                data: productQuantities,
+                backgroundColor: '#1E3A8A',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+</script>
+@endif
 @endsection

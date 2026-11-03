@@ -8,6 +8,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Product;
 use App\Models\Employee;
 use App\Models\Customer;
+use App\Models\SaleItem;
 
 class ReportController extends Controller
 {
@@ -30,11 +31,23 @@ class ReportController extends Controller
 
         $totalSales = $sales->sum('total_amount');
         $salesCount = $sales->count();
+        $topProductsToday = SaleItem::query()
+            ->select('product_id')
+            ->selectRaw('SUM(quantity) as total_quantity')
+            ->whereHas('sale', function ($query) {
+                $query->whereDate('sales_time', today());
+            })
+            ->with('product')
+            ->groupBy('product_id')
+            ->orderByDesc('total_quantity')
+            ->take(5)
+            ->get();
 
         return view('reports.sales', compact(
             'sales',
             'totalSales',
-            'salesCount'
+            'salesCount',
+            'topProductsToday'
         ));
     }
 
@@ -333,21 +346,95 @@ class ReportController extends Controller
         }, 200, $headers);
     }
 
-    public function employeeSales(Employee $employee)
+    public function employeeSales(Request $request, Employee $employee)
     {
-        $sales = Sale::with(['customer', 'saleItems.product'])
-            ->where('employee_id', $employee->id)
-            ->latest('sales_time')
-            ->get();
+        $query = Sale::with(['customer', 'saleItems.product'])
+            ->where('employee_id', $employee->id);
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('sales_time', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('sales_time', '<=', $request->end_date);
+        }
+
+        $sales = $query->latest('sales_time')->get();
 
         $totalSales = $sales->sum('total_amount');
         $salesCount = $sales->count();
+        $productsSold = \App\Models\SaleItem::query()
+            ->select('product_id')
+            ->selectRaw('SUM(quantity) as total_quantity')
+            ->selectRaw('SUM(quantity * unit_price) as total_amount')
+            ->whereHas('sale', function ($query) use ($employee, $request) {
+                $query->where('employee_id', $employee->id);
+
+                if ($request->filled('start_date')) {
+                    $query->whereDate('sales_time', '>=', $request->start_date);
+                }
+
+                if ($request->filled('end_date')) {
+                    $query->whereDate('sales_time', '<=', $request->end_date);
+                }
+            })
+            ->with('product')
+            ->groupBy('product_id')
+            ->get();
 
         return view('reports.employee-sales', compact(
             'employee',
             'sales',
             'totalSales',
-            'salesCount'
+            'salesCount',
+            'productsSold'
         ));
+    }
+
+    public function exportEmployeeSalesExcel(Request $request, Employee $employee)
+    {
+        $query = Sale::with(['customer', 'saleItems.product'])
+            ->where('employee_id', $employee->id);
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('sales_time', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('sales_time', '<=', $request->end_date);
+        }
+
+        $sales = $query->latest('sales_time')->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="employee-sales-report.csv"',
+        ];
+
+        return response()->stream(function () use ($sales, $employee) {
+            $file = fopen('php://output', 'w');
+
+            fwrite($file, "\xEF\xBB\xBF");
+
+            fputcsv($file, [
+                'Employee',
+                'Sale ID',
+                'Customer',
+                'Date',
+                'Total Amount',
+            ]);
+
+            foreach ($sales as $sale) {
+                fputcsv($file, [
+                    $employee->name,
+                    $sale->id,
+                    $sale->customer->name ?? 'N/A',
+                    $sale->sales_time,
+                    $sale->total_amount,
+                ]);
+            }
+
+            fclose($file);
+        }, 200, $headers);
     }
 }
