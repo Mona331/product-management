@@ -68,14 +68,26 @@ class EmployeeController extends Controller
         return redirect()->route('employees.index')
             ->with('success', 'Employee and login account created successfully!');
     }
+    private function authorizeEmployeeAccess(Employee $employee): void
+    {
+        if (auth()->user()->role === 'hr') {
 
+            $user = $employee->user;
+
+            if ($user && $user->role !== 'employee') {
+                abort(403, 'You are not authorized to access this employee.');
+            }
+        }
+    }
     public function edit(Employee $employee)
     {
+        $this->authorizeEmployeeAccess($employee);
         return view('employees.edit', compact('employee'));
     }
 
     public function update(Request $request, Employee $employee)
     {
+        $this->authorizeEmployeeAccess($employee);
         $data = $request->validate([
             'name' => 'required|string|max:100',
             'phone' => 'nullable|string|max:100',
@@ -113,6 +125,7 @@ class EmployeeController extends Controller
     }
     public function destroy(Employee $employee)
     {
+        $this->authorizeEmployeeAccess($employee);
         DB::transaction(function () use ($employee) {
 
             $user = $employee->user;

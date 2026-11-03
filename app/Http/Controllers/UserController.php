@@ -30,10 +30,27 @@ class UserController extends Controller
             return back()->with('error', 'You cannot change your own role.');
         }
 
-        $user->update([
-            'role' => $data['role'],
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($user, $data) {
 
-        return back()->with('success', 'User role updated successfully!');
+            // Update user role
+            $user->update([
+                'role' => $data['role'],
+            ]);
+
+            // Update employee position if linked
+            if ($user->employee) {
+                $position = match ($data['role']) {
+                    'admin' => 'Admin',
+                    'hr' => 'HR',
+                    'employee' => 'Sales Employee',
+                };
+
+                $user->employee->update([
+                    'position' => $position,
+                ]);
+            }
+        });
+
+        return back()->with('success', 'User role and position updated successfully!');
     }
 }
