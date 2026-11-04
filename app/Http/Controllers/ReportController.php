@@ -437,4 +437,36 @@ class ReportController extends Controller
             fclose($file);
         }, 200, $headers);
     }
+
+    public function mySales(Request $request)
+{
+    $employee = auth()->user()->employee;
+
+    if (!$employee) {
+        abort(404, 'Employee record not found.');
+    }
+
+    $query = Sale::with(['customer', 'saleItems.product'])
+        ->where('employee_id', $employee->id);
+
+    if ($request->filled('start_date')) {
+        $query->whereDate('sales_time', '>=', $request->start_date);
+    }
+
+    if ($request->filled('end_date')) {
+        $query->whereDate('sales_time', '<=', $request->end_date);
+    }
+
+    $sales = $query->latest('sales_time')->get();
+
+    $totalSales = $sales->count();
+    $totalAmount = $sales->sum('total_amount');
+
+    return view('reports.my-sales', compact(
+        'employee',
+        'sales',
+        'totalSales',
+        'totalAmount'
+    ));
+}
 }

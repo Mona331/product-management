@@ -71,7 +71,9 @@
                         <th>Position</th>
                         <th>Number of Sales</th>
                         <th>Total Sales Amount</th>
+                        @if(auth()->user()->role === 'admin')
                         <th>Sales Details</th>
+                        @endif
                     </tr>
                 </thead>
 
@@ -91,10 +93,12 @@
                         </td>
 
                         <td>
+                            @if(auth()->user()->role === 'admin')
                             <a href="{{ route('reports.employees.sales', $employee->id) }}"
                                 class="btn btn-sm btn-primary">
                                 View Sales
                             </a>
+                            @endif
                         </td>
                     </tr>
 

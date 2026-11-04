@@ -49,7 +49,16 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('sales.index') }}">Sales</a>
                     </li>
+
                     @endif
+                    @if(auth()->user()->role === 'employee')
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('employee.mySales') }}">
+                            My Sales Report
+                        </a>
+                    </li>
+                    @endif
+
 
                     {{-- Products: Admin only --}}
                     @if(auth()->user()->role === 'admin')
@@ -68,6 +77,14 @@
                     @if(auth()->user()->role === 'admin')
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('users.index') }}">User Management</a>
+                    </li>
+                    @endif
+                    {{-- HR Reports --}}
+                    @if(auth()->user()->role === 'hr')
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('hr.reports.employees') }}">
+                            Employees Report
+                        </a>
                     </li>
                     @endif
                     {{-- Reports: Admin only --}}

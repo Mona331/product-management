@@ -42,6 +42,30 @@ Route::middleware('auth')->group(function () {
         Route::get('/sales/{sale}/export-excel', [SaleController::class, 'exportExcel'])
             ->name('sales.exportExcel');
     });
+    // Admin and HR Employee Sales Reports
+    Route::middleware('role:admin,hr')->group(function () {
+
+        Route::get('/reports/employees/{employee}/sales', [ReportController::class, 'employeeSales'])
+            ->name('reports.employees.sales');
+
+        Route::get('/reports/employees/{employee}/sales/export-excel', [ReportController::class, 'exportEmployeeSalesExcel'])
+            ->name('reports.employees.sales.exportExcel');
+        Route::get('/hr/sales/{sale}', [SaleController::class, 'show'])
+            ->name('hr.sales.show');
+        Route::get('/hr/sales/{sale}/export-excel', [SaleController::class, 'exportExcel'])
+            ->name('hr.sales.exportExcel');
+    });
+    // HR Routes
+    Route::middleware('role:hr')->group(function () {
+        Route::get('/hr/reports/employees', [ReportController::class, 'employees'])
+            ->name('hr.reports.employees');
+    });
+
+    // Employee Routes
+    Route::middleware('role:employee')->group(function () {
+        Route::get('/my-sales-report', [ReportController::class, 'mySales'])
+            ->name('employee.mySales');
+    });
     // Dashboard: all authenticated users
     Route::get('/dashboard', function () {
         return view('dashboard');

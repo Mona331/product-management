@@ -107,10 +107,17 @@
                         </td>
 
                         <td>
+                            @if(auth()->user()->role === 'hr')
+                            <a href="{{ route('hr.sales.show', $sale->id) }}"
+                                class="btn btn-sm btn-primary">
+                                View Sale
+                            </a>
+                            @else
                             <a href="{{ route('sales.show', $sale->id) }}"
                                 class="btn btn-sm btn-primary">
                                 View Sale
                             </a>
+                            @endif
                         </td>
                     </tr>
                     @empty
