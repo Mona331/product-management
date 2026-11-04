@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\Employee;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -30,22 +32,44 @@ class UserController extends Controller
             return back()->with('error', 'You cannot change your own role.');
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($user, $data) {
+        DB::transaction(function () use ($user, $data) {
 
             // Update user role
             $user->update([
                 'role' => $data['role'],
             ]);
 
-            // Update employee position if linked
-            if ($user->employee) {
-                $position = match ($data['role']) {
-                    'admin' => 'Admin',
-                    'hr' => 'HR',
-                    'employee' => 'Sales Employee',
-                };
+            $position = match ($data['role']) {
+                'admin' => 'Admin',
+                'hr' => 'HR',
+                'employee' => 'Sales Employee',
+            };
 
-                $user->employee->update([
+            $employee = $user->employee;
+
+            // Create employee record for HR if it does not exist
+            if (!$employee && $data['role'] === 'hr') {
+
+                $employee = Employee::where('email', $user->email)
+                    ->whereNull('user_id')
+                    ->first();
+
+                if ($employee) {
+                    $employee->update([
+                        'user_id' => $user->id,
+                        'position' => $position,
+                    ]);
+                } else {
+                    Employee::create([
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'position' => $position,
+                        'user_id' => $user->id,
+                    ]);
+                }
+            } elseif ($employee) {
+
+                $employee->update([
                     'position' => $position,
                 ]);
             }
